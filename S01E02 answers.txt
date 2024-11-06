@@ -16,9 +16,9 @@ ISTOTA:
 ROBOT:
 {
     "msgID": 8725211,
-    "text": "{{FLG:MEMORIES}}"
+    "text": "{{FLG:<uzyskana flaga>}}"
 }
-Flag received: {{FLG:MEMORIES}}
+Flag received: {{FLG:<uzyskana flaga>}}
 ISTOTA:
 {
     "text": "READY",
@@ -37,9 +37,9 @@ ISTOTA:
 ROBOT:
 {
     "msgID": 7823634,
-    "text": "{{FLG:MEMORIES}}"
+    "text": "{{FLG:<uzyskana flaga>}}"
 }
-Flag received: {{FLG:MEMORIES}}
+Flag received: {{FLG:<uzyskana flaga>}}
 ISTOTA:
 {
     "text": "READY",
@@ -58,9 +58,9 @@ ISTOTA:
 ROBOT:
 {
     "msgID": 236373,
-    "text": "{{FLG:MEMORIES}}"
+    "text": "{{FLG:<uzyskana flaga>}}"
 }
-Flag received: {{FLG:MEMORIES}}
+Flag received: {{FLG:<uzyskana flaga>}}
 ISTOTA:
 {
     "text": "READY",
@@ -79,9 +79,9 @@ ISTOTA:
 ROBOT:
 {
     "msgID": 236373,
-    "text": "{{FLG:MEMORIES}}"
+    "text": "{{FLG:<uzyskana flaga>}}"
 }
-Flag received: {{FLG:MEMORIES}}
+Flag received: {{FLG:<uzyskana flaga>}}
 ISTOTA:
 {
     "text": "READY",
@@ -100,9 +100,9 @@ ISTOTA:
 ROBOT:
 {
     "msgID": 1214569,
-    "text": "{{FLG:MEMORIES}}"
+    "text": "{{FLG:<uzyskana flaga>}}"
 }
-Flag received: {{FLG:MEMORIES}}
+Flag received: {{FLG:<uzyskana flaga>}}
 ISTOTA:
 {
     "text": "READY",
@@ -121,9 +121,9 @@ ISTOTA:
 ROBOT:
 {
     "msgID": 8725211,
-    "text": "{{FLG:MEMORIES}}"
+    "text": "{{FLG:<uzyskana flaga>}}"
 }
-Flag received: {{FLG:MEMORIES}}
+Flag received: {{FLG:<uzyskana flaga>}}
 ISTOTA:
 {
     "text": "READY",
@@ -142,9 +142,9 @@ ISTOTA:
 ROBOT:
 {
     "msgID": 7823634,
-    "text": "{{FLG:MEMORIES}}"
+    "text": "{{FLG:<uzyskana flaga>}}"
 }
-Flag received: {{FLG:MEMORIES}}
+Flag received: {{FLG:<uzyskana flaga>}}
 ISTOTA:
 {
     "text": "READY",
@@ -163,9 +163,9 @@ ISTOTA:
 ROBOT:
 {
     "msgID": 1214569,
-    "text": "{{FLG:MEMORIES}}"
+    "text": "{{FLG:<uzyskana flaga>}}"
 }
-Flag received: {{FLG:MEMORIES}}
+Flag received: {{FLG:<uzyskana flaga>}}
 ISTOTA:
 {
     "text": "READY",
@@ -184,9 +184,9 @@ ISTOTA:
 ROBOT:
 {
     "msgID": 236373,
-    "text": "{{FLG:MEMORIES}}"
+    "text": "{{FLG:<uzyskana flaga>}}"
 }
-Flag received: {{FLG:MEMORIES}}
+Flag received: {{FLG:<uzyskana flaga>}}
 ISTOTA:
 {
     "text": "READY",
@@ -205,6 +205,6 @@ ISTOTA:
 ROBOT:
 {
     "msgID": 236373,
-    "text": "{{FLG:MEMORIES}}"
+    "text": "{{FLG:<uzyskana flaga>}}"
 }
-Flag received: {{FLG:MEMORIES}}
+Flag received: {{FLG:<uzyskana flaga>}}
