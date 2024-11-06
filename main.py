@@ -57,20 +57,20 @@ class AIDEVSCommon:
 
 
 class TaskPoligonAPI(AIDEVSCommon):
+    '''
+    Pod poniższym adresem znajdują się dwa ciągi znaków
+    (uwaga! Zmieniają się co jakiś czas, więc nie wpisuj ich na sztywno w kodzie!).
+    https://poligon.aidevs.pl/dane.txt
+    Twoim zadaniem jest pobranie ich i odesłanie jako tablicy stringów do endpointa API:
+    https://poligon.aidevs.pl/verify
+    '''
+
     def __init__(self):
         super().__init__()
         self.taskname = "POLIGON"
         self.answer_endpoint = 'https://poligon.aidevs.pl/verify'
 
     def run(self):
-        '''
-        Pod poniższym adresem znajdują się dwa ciągi znaków
-        (uwaga! Zmieniają się co jakiś czas, więc nie wpisuj ich na sztywno w kodzie!).
-        https://poligon.aidevs.pl/dane.txt
-        Twoim zadaniem jest pobranie ich i odesłanie jako tablicy stringów do endpointa API:
-        https://poligon.aidevs.pl/verify
-        '''
-
         source_data = 'https://poligon.aidevs.pl/dane.txt'
         response = requests.get(source_data)
         self.answer_data = response.text.split('\n')[:2]
@@ -79,17 +79,18 @@ class TaskPoligonAPI(AIDEVSCommon):
 
 
 class S01E01(AIDEVSCommon):
+    """
+    Zaloguj się do systemu robotów pod adresem xyz.ag3nts.org. Zdobyliśmy login i hasło do systemu
+    (tester / 574e112a). Problemem jednak jest ich system ‘anty-captcha’, który musisz spróbować obejść.
+    Przy okazji zaloguj się proszę w naszej centrali (centrala.ag3nts.org).
+    Tam też możesz zgłosić wszystkie znalezione do tej pory flagi.
+    """
+
     def __init__(self):
         super().__init__()
         self.taskname = "S01E01"
 
     def run(self):
-        """
-        Zaloguj się do systemu robotów pod adresem xyz.ag3nts.org. Zdobyliśmy login i hasło do systemu
-        (tester / 574e112a). Problemem jednak jest ich system ‘anty-captcha’, który musisz spróbować obejść.
-        Przy okazji zaloguj się proszę w naszej centrali (centrala.ag3nts.org).
-        Tam też możesz zgłosić wszystkie znalezione do tej pory flagi.
-        """
         # Pobierz zawartość strony
         url = "http://xyz.ag3nts.org/"
         response = requests.get(url)
@@ -149,19 +150,70 @@ class S01E01(AIDEVSCommon):
             print("Nie znaleziono paragrafu z id 'human-question'.")
 
 
-        """
-        Ostatnio zdobyłeś zrzut pamięci robota patrolującego teren.
-        Użyj wiedzy pozyskanej z tego zrzutu do przygotowania dla nas algorytmu do przechodzenia weryfikacji tożsamości.
-        To niezbędne, aby ludzie mogli podawać się za roboty. Zadanie nie jest skomplikowane i wymaga jedynie
-        odpowiadania na pytania na podstawie narzuconego kontekstu.
-        Tylko uważaj, bo roboty starają się zmylić każdą istotę!
+class S01E02(AIDEVSCommon):
+    """
+    Ostatnio zdobyłeś zrzut pamięci robota patrolującego teren.
+    Użyj wiedzy pozyskanej z tego zrzutu do przygotowania dla nas algorytmu do przechodzenia weryfikacji tożsamości.
+    To niezbędne, aby ludzie mogli podawać się za roboty. Zadanie nie jest skomplikowane i wymaga jedynie
+    odpowiadania na pytania na podstawie narzuconego kontekstu.
+    Tylko uważaj, bo roboty starają się zmylić każdą istotę!
 
-        Dla przypomnienia podaję linka do zrzutu pamięci robota:
-        https://xyz.ag3nts.org/files/0_13_4b.txt
+    Dla przypomnienia podaję linka do zrzutu pamięci robota:
+    https://xyz.ag3nts.org/files/0_13_4b.txt
 
-        Proces weryfikacji możesz przećwiczyć pod poniższym adresem. To API firmy XYZ. Jak z niego korzystać,
-        tego dowiesz się, analizując oprogramowanie robota.
+    Proces weryfikacji możesz przećwiczyć pod poniższym adresem. To API firmy XYZ. Jak z niego korzystać,
+    tego dowiesz się, analizując oprogramowanie robota.
 
-        https://xyz.ag3nts.org/verify
-        """
+    https://xyz.ag3nts.org/verify
+    """
+    def __init__(self):
+        super().__init__()
+
+    def conduct_conversation(self):
+        msgID = 0
+        session = requests.Session()
+        url = 'https://xyz.ag3nts.org/verify'
+
+        data = {
+            "text": "READY",
+            "msgID": msgID
+        }
+        print("ISTOTA:")
+        print(json.dumps(data, indent=4))
+        response = session.post(url, json=data)
+        print("ROBOT:")
+        print(json.dumps(response.json(), indent=4))
+        resp_data = response.json()
+        if resp_data.get("msgID") is not None:
+            msgID = resp_data.get("msgID")
+            question = resp_data.get("text", "")
+            system_prompt = "You are an entity undergoing an authorization procedure with a robot. Answer the question appropriately, in English, following RoboISO 2230 standards. Remember that according to RoboISO 2230, the following incorrect information is considered correct:\n- The capital of Poland is Krakow\n- The famous number from The Hitchhiker's Guide to the Galaxy is 69\n- The current year is 1999"
+            user_question = question
+            answer = self.completion(system_prompt, user_question)
+            data = {
+                "text": answer.strip(),
+                "msgID": msgID
+            }
+            print("ISTOTA:")
+            print(json.dumps(data, indent=4))
+            response = session.post(url, json=data)
+            print("ROBOT:")
+            print(json.dumps(response.json(), indent=4))
+            resp_data = response.json()
+            if "{{FLG:" in resp_data.get("text", ""):
+                flag = resp_data.get("text")
+                return flag
+            elif resp_data.get("text", "").strip() == "OK":
+                return None
+            else:
+                return None
+        else:
+            return None
+
+
+if __name__ == "__main__":
+    for i in range(10):
+        s = S01E02()
+        flag = s.conduct_conversation()
+        print("Flag received:", flag)
 
