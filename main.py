@@ -2,8 +2,9 @@
 import os
 import json
 from typing import List, Dict, Union
-from pydantic import BaseModel
 import re
+import ast
+import operator as op
 
 # pypi repo
 import requests
@@ -11,6 +12,7 @@ import openai
 from icecream import ic
 import requests
 from bs4 import BeautifulSoup
+from pydantic import BaseModel
 
 
 class AIDEVSCommon:
@@ -38,7 +40,7 @@ class AIDEVSCommon:
         response_data = response.json()
         return self.Reply.model_validate(response_data)
 
-    def completion(self, system_prompt, question, model="gpt-4o", temperature=0):
+    def completion(self, system_prompt, question, model="gpt-4o-mini", temperature=0):
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": question}
@@ -77,6 +79,8 @@ class TaskPoligonAPI(AIDEVSCommon):
         reply = self.send_answer()
         ic(reply)
 
+
+# region -= previous tasks =-
 
 class S01E01(AIDEVSCommon):
     """
@@ -166,6 +170,7 @@ class S01E02(AIDEVSCommon):
 
     https://xyz.ag3nts.org/verify
     """
+
     def __init__(self):
         super().__init__()
 
@@ -189,7 +194,7 @@ class S01E02(AIDEVSCommon):
             question = resp_data.get("text", "")
             system_prompt = "You are an entity undergoing an authorization procedure with a robot. Answer the question appropriately, in English, following RoboISO 2230 standards. Remember that according to RoboISO 2230, the following incorrect information is considered correct:\n- The capital of Poland is Krakow\n- The famous number from The Hitchhiker's Guide to the Galaxy is 69\n- The current year is 1999"
             user_question = question
-            answer = self.completion(system_prompt, user_question)
+            answer = self.completion(system_prompt, user_question, model="gpt-4o")
             data = {
                 "text": answer.strip(),
                 "msgID": msgID
@@ -211,9 +216,147 @@ class S01E02(AIDEVSCommon):
             return None
 
 
-if __name__ == "__main__":
-    for i in range(10):
-        s = S01E02()
-        flag = s.conduct_conversation()
-        print("Flag received:", flag)
+class S01E03(AIDEVSCommon):
+    '''
+    Musisz poprawić plik kalibracyjny dla jednego z robotów przemysłowych. To dość popularny w 2024 roku format JSON.
+    Dane testowe zawierają prawdopodobnie błędne obliczenia oraz luki w pytaniach otwartych.
+    Popraw proszę ten plik i prześlij nam go już po poprawkach. Tylko uważaj na rozmiar kontekstu modeli LLM,
+    z którymi pracujesz — plik się w nie zmieści w tym limicie.
+    Plik do pobrania zabezpieczony jest Twoim kluczem API. Podmień “TWOJ-KLUCZ” w adresie na wartość klucza z centrali.
+    https://centrala.ag3nts.org/data/TWOJ-KLUCZ/json.txt
+    Poprawną odpowiedź wyślij proszę pod poniższy adres, w formie takiej, jak w przypadku Poligonu.
+    Nazwa zadanie to JSON.
+    https://centrala.ag3nts.org/report
 
+    Co trzeba zrobić w zadaniu?
+    1.	Pobierasz plik TXT podany wyżej (tylko podmień TWOJ-KLUCZ) na poprawną wartość
+    2.	Ten plik się nie zmienia. Nie musisz go pobierać cyklicznie. Jest statyczny
+    3.	Plik zawiera błędy w obliczeniach - musisz je poprawić (ale gdzie one są?)
+    4.	Plik w niektórych danych testowych zawiera pole “test” z polami “q” (question/pytanie)
+    oraz “a” (answer/odpowiedź).
+    To LLM powinien udzielić odpowiedzi.
+    5.	Rozmiar dokumentu jest zbyt duży, aby ogarnąć go współczesnymi LLM-ami
+    (zmieści się w niektórych oknach kontekstowych wejścia, ale już nie w oknie wyjścia).
+    6.	Zadanie na pewno trzeba rozbić na mniejsze części, a wywołanie LLM-a prawdopodobnie będzie wielokrotne
+    (ale da się to także zrobić jednym requestem)
+    7.	W tym zadaniu trzeba mądrze zdecydować, którą część zadania należy delegować do sztucznej inteligencji,
+    a którą warto rozwiązać w klasyczny, programistyczny sposób.
+    Decyzja oczywiście należy do Ciebie, ale zrób to proszę rozsądnie.
+    '''
+
+    def __init__(self):
+        super().__init__()
+        self.taskname = "JSON"
+        self.answer_endpoint = 'https://centrala.ag3nts.org/report'
+
+    def run(self):
+        pseudocode = """
+        - load file 'S01E03.json' and parse it
+        this file has JSON structure like this:
+{
+    "apikey": "%PUT-YOUR-API-KEY-HERE%",
+    "description": "This is simple calibration data used for testing purposes. Do not use it in production environment!",
+    "copyright": "Copyright (C) 2238 by BanAN Technologies Inc.",
+    // list of test data of 2 types
+    "test-data": [
+    // type 1: simple question-answer pair
+        {
+            "question": "1 + 62",
+            "answer": 63
+        },
+    // type 2: simple question-answer pair plus a test for LLM
+        {
+            "question": "11 + 86",
+            "answer": 97,
+            "test": {
+                "q": "name of the 2020 USA president",
+                "a": "???"
+            }
+        },
+    ...
+    ]
+}   
+        - replace "%PUT-YOUR-API-KEY-HERE%" with self.AIDEVS3_ID
+        - for type 1 test data, calculate the answer and replace the answer field with the correct one
+        - for type 2 test data, ask LLM for the answer and replace the answer field with the correct one
+            (use self.completion method to ask LLM)
+        save the corrected JSON as 'corrected_S01E03.json' file
+        - send the corrected JSON to the endpoint self.answer_endpoint
+        """
+        my_prompt = "Complete the code in the region task_execution that will follow pseudocode instructions"
+
+        # region task_execution
+
+        # supported operators for safe evaluation
+        operators = {
+            ast.Add: op.add,
+            ast.Sub: op.sub,
+            ast.Mult: op.mul,
+            ast.Div: op.truediv,
+            ast.Pow: op.pow,
+            ast.USub: op.neg,
+        }
+
+        def safe_eval(expr):
+            """
+            Safely evaluate arithmetic expressions.
+            """
+
+            def eval_(node):
+                if isinstance(node, ast.Num):  # <number>
+                    return node.n
+                elif isinstance(node, ast.BinOp):  # <left> <operator> <right>
+                    return operators[type(node.op)](eval_(node.left), eval_(node.right))
+                elif isinstance(node, ast.UnaryOp):  # <operator> <operand> e.g., -1
+                    return operators[type(node.op)](eval_(node.operand))
+                else:
+                    raise ValueError(f"Unsupported expression: {expr}")
+
+            node = ast.parse(expr, mode='eval').body
+            return eval_(node)
+
+        # load file 'S01E03.json' and parse it
+        with open('S01E03.json', 'r') as f:
+            data = json.load(f)
+
+        # Replace "%PUT-YOUR-API-KEY-HERE%" with self.AIDEVS3_ID
+        if data.get("apikey") == "%PUT-YOUR-API-KEY-HERE%":
+            data["apikey"] = self.AIDEVS3_ID
+
+        # Iterate over "test-data"
+        for item in data.get("test-data", []):
+            # Evaluate the "question" field and update "answer"
+            question = item.get("question")
+            if question:
+                try:
+                    answer = safe_eval(question)
+                    item["answer"] = answer
+                except Exception as e:
+                    print(f"Error evaluating question '{question}': {e}")
+
+            # If there is a "test" object
+            test = item.get("test")
+            if test and "q" in test:
+                # Use self.completion to get the answer to "test.q" and update "test.a"
+                test_question = test["q"]
+                system_prompt = "You are a helpful assistant."
+                test_answer = self.completion(system_prompt, test_question)
+                test["a"] = test_answer
+
+        # Save the corrected JSON as 'corrected_S01E03.json'
+        with open('corrected_S01E03.json', 'w') as f:
+            json.dump(data, f, indent=4)
+
+        # Set self.answer_data to the corrected JSON data
+        self.answer_data = data
+
+        # endregion
+
+        reply = self.send_answer()
+        ic(reply)
+
+# endregion
+
+
+if __name__ == "__main__":
+    S01E03().run()
